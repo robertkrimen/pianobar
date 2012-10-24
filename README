@@ -1,0 +1,40 @@
+pianobar
+========
+
+pianobar is a modified version of PromyLOPh/pianobar that will store played music
+on disk if you have the following config variable set:
+
+    download = /path/to/download/directory
+
+In addition, you can configure the artist/album/title separator and whether the filename is
+"normalized" with the following
+
+    download_separator = ___
+    download_safe_filename = 1
+
+The default separator is '---' and by default no filename normalizing takes place
+
+Music is saved in a directory corresponding to the radio station. Unloved music (not-favorited)
+is stored in the 'unloved' directory. The structure for a "Blue States Radio" station would look something
+like this, for example:
+
+    /Users/alice/Download/Blue\ States\ Radio/*.aac # Loved music files
+    /Users/alice/Download/Blue\ States\ Radio/unloved/*.aac # Unloved music files
+
+Favoriting in the middle of playback *will* put the music file in the right location, as you would expect
+
+========
+
+pianobar is a console client for the personalized web radio pandora
+(http://www.pandora.com).
+
+- play and manage (create, add more music, delete, rename, ...) your stations
+- rate played songs and let pandora explain why they have been selected
+- show upcoming songs/song history
+- configure keybindings
+- last.fm scrobbling support (external application)
+- proxy support for listeners outside the USA
+
+The sourcecode can be downloaded at http://github.com/PromyLOPh/pianobar/ or
+http://6xq.net/projects/pianobar/
+

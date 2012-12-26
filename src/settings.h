@@ -89,7 +89,7 @@ typedef struct {
 	BarStationSorting_t sortOrder;
 	PianoAudioQuality_t audioQuality;
 	char *username;
-	char *password;
+	char *password, *passwordCmd;
 	char *controlProxy; /* non-american listeners need this */
 	char *proxy;
 	char *autostartStation;
@@ -101,7 +101,7 @@ typedef struct {
 	char *npStationFormat;
 	char *listSongFormat;
 	char *fifo;
-	char *rpcHost, *partnerUser, *partnerPassword, *device, *inkey, *outkey;
+	char *rpcHost, *rpcTlsPort, *partnerUser, *partnerPassword, *device, *inkey, *outkey;
 	char tlsFingerprint[20];
 	char keys[BAR_KS_COUNT];
 	BarMsgFormatStr_t msgFormat[MSG_COUNT];
@@ -111,9 +111,12 @@ typedef struct {
     bool downloadCleanup;
 } BarSettings_t;
 
+#include <piano.h>
+
 void BarSettingsInit (BarSettings_t *);
 void BarSettingsDestroy (BarSettings_t *);
 void BarSettingsRead (BarSettings_t *);
+void BarSettingsWrite (PianoStation_t *, BarSettings_t *);
 void BarGetXdgConfigDir (const char *, char *, size_t);
 
 #endif /* _SETTINGS_H */

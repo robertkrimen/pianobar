@@ -560,20 +560,24 @@ BarUiActCallback(BarUiActBookmark) {
 BarUiActCallback(BarUiActVolDown) {
 	--app->settings.volume;
 	/* FIXME: assuming unsigned integer store is atomic operation */
-	app->player.scale = BarPlayerCalcScale (app->player.gain + app->settings.volume);
+	if ( !app->mute ) {
+		app->player.scale = BarPlayerCalcScale (app->player.gain + app->settings.volume);
+	}
 }
 
 /*	increase volume
  */
 BarUiActCallback(BarUiActVolUp) {
 	++app->settings.volume;
+	app->mute = 0;
 	/* FIXME: assuming unsigned integer store is atomic operation */
 	app->player.scale = BarPlayerCalcScale (app->player.gain + app->settings.volume);
 }
 
 BarUiActCallback(BarUiActVolMute) {
 	/* FIXME: assuming unsigned integer store is atomic operation */
-	if ( app->player.scale ) {
+	app->mute = !app->mute;
+	if ( app->mute ) {
 		app->player.scale = 0;
 	}
 	else {

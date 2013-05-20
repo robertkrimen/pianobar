@@ -443,7 +443,9 @@ static void BarMainStartPlayback (BarApp_t *app, pthread_t *playerThread) {
 		}
 
 		app->player.gain = app->playlist->fileGain;
-		app->player.scale = BarPlayerCalcScale (app->player.gain + app->settings.volume);
+		if ( !app->mute ) {
+			app->player.scale = BarPlayerCalcScale (app->player.gain + app->settings.volume);
+		}
 		app->player.audioFormat = app->playlist->audioFormat;
 		app->player.settings = &app->settings;
 		pthread_mutex_init (&app->player.pauseMutex, NULL);

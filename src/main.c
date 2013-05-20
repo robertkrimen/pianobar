@@ -449,6 +449,7 @@ static void BarMainStartPlayback (BarApp_t *app, pthread_t *playerThread) {
 		app->player.audioFormat = app->playlist->audioFormat;
 		app->player.settings = &app->settings;
 		pthread_mutex_init (&app->player.pauseMutex, NULL);
+		pthread_cond_init (&app->player.pauseCond, NULL);
 
 		/* throw event */
 		BarUiStartEventCmd (&app->settings, "songstart",
@@ -478,10 +479,18 @@ static void BarMainPlayerCleanup (BarApp_t *app, pthread_t *playerThread) {
 	/* FIXME: pthread_join blocks everything if network connection
 	 * is hung up e.g. */
 	pthread_join (*playerThread, &threadRet);
+	pthread_cond_destroy (&app->player.pauseCond);
 	pthread_mutex_destroy (&app->player.pauseMutex);
 
-	/* don't continue playback if thread reports error */
-	if (threadRet != (void *) PLAYER_RET_OK) {
+	if (threadRet == (void *) PLAYER_RET_OK) {
+		app->playerErrors = 0;
+	} else if (threadRet == (void *) PLAYER_RET_SOFTFAIL) {
+		++app->playerErrors;
+		if (app->playerErrors >= app->settings.maxPlayerErrors) {
+			/* don't continue playback if thread reports too many error */
+			app->curStation = NULL;
+		}
+	} else {
 		app->curStation = NULL;
 	}
 

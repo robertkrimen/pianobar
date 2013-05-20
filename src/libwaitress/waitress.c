@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2009-2012
+Copyright (c) 2009-2013
 	Lars-Dominik Braun <lars@6xq.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -703,6 +703,7 @@ static void WaitressHandleHeader (WaitressHandle_t *waith, const char * const ke
 
 	if (strcaseeq (key, "Content-Length")) {
 		waith->request.contentLength = atol (value);
+		waith->request.contentLengthKnown = true;
 	} else if (strcaseeq (key, "Transfer-Encoding")) {
 		if (strcaseeq (value, "chunked")) {
 			waith->request.dataHandler = WaitressHandleChunked;
@@ -974,6 +975,10 @@ static WaitressReturn_t WaitressReceiveHeaders (WaitressHandle_t *waith,
 							hdrParseMode = HDRM_LINES;
 							break;
 
+						case 400:
+							return WAITRESS_RET_BAD_REQUEST;
+							break;
+
 						case 403:
 							return WAITRESS_RET_FORBIDDEN;
 							break;
@@ -1060,6 +1065,12 @@ static WaitressReturn_t WaitressReceiveResponse (WaitressHandle_t *waith) {
 				/* go on */
 				break;
 		}
+		if (waith->request.contentLengthKnown &&
+				waith->request.contentReceived >= waith->request.contentLength) {
+			/* don’t call read() again if we know the body’s size and have all
+			 * of it already */
+			break;
+		}
 		READ_RET (buf, WAITRESS_BUFFER_SIZE-1, &recvSize);
 	} while (recvSize > 0);
 
@@ -1079,6 +1090,7 @@ WaitressReturn_t WaitressFetchCall (WaitressHandle_t *waith) {
 	waith->request.dataHandler = WaitressHandleIdentity;
 	waith->request.read = WaitressOrdinaryRead;
 	waith->request.write = WaitressOrdinaryWrite;
+	waith->request.contentLengthKnown = false;
 
 	if (waith->url.tls) {
 		gnutls_init (&waith->request.tlsSession, GNUTLS_CLIENT);

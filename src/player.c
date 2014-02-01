@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <limits.h>
 #include <assert.h>
 #include <arpa/inet.h>
+#include <sys/stat.h>
 
 #include "player.h"
 #include "config.h"
@@ -47,16 +48,29 @@ static void BarDownloadWrite(struct audioPlayer *player, const char *data, size_
 
 static void BarDownloadFinish(struct audioPlayer *player, WaitressReturn_t wRet) {
 
+	struct stat _stat;
+
 	if (player->download.handle!= NULL) {
 		fclose(player->download.handle);
 		player->download.handle = NULL;
 		if (wRet == WAITRESS_RET_OK) {
+			char *target;
 			// Only "commit" download if everything downloaded okay
 			if (player->download.loveSong) {
-				rename(player->download.downloadingFilename, player->download.lovedFilename);
+				target = player->download.lovedFilename;
 			}
 			else {
-				rename(player->download.downloadingFilename, player->download.unlovedFilename);
+				target = player->download.unlovedFilename;
+			}
+			float size_target = 0, size_download = 0;
+			if (0 == stat(target, &_stat)) {
+				size_target = _stat.st_size;
+			}
+			if (0 == stat(player->download.downloadingFilename, &_stat)) {
+				size_download = _stat.st_size;
+			}
+			if (size_target == 0 || ((size_download / size_target) > 0.75)) { 
+				rename(player->download.downloadingFilename, target);
 			}
 		}
         else {
